@@ -1,4 +1,4 @@
-#!/bin-bash
+#!/bin/bash
 set -euo pipefail
 
 # --- Configuration ---
@@ -55,6 +55,11 @@ cp "$CONFIG_FILE" "$BACKUP_FILE"
 # --- Create a temporary file for the new config ---
 TMP_FILE=$(mktemp)
 
+# --- Sanitize JSONC to be compatible with jq ---
+# This removes // comments and trailing commas that are valid in JSONC but not in strict JSON.
+# It is not a perfect parser, but it handles the most common cases.
+SANITIZED_JSON=$(sed -e 's|//.*||' -e 's/,\s*\]/]/g' -e 's/,\s*\}/}/g' "$CONFIG_FILE")
+
 # --- Merge the JSON object AND add to modules-center ---
 echo "Adding 'custom/music' definition (Exec: $WIDGET_SCRIPT_PATH)..."
 
@@ -63,18 +68,17 @@ echo "Adding 'custom/music' definition (Exec: $WIDGET_SCRIPT_PATH)..."
 # 2. '| .["modules-center"] |= (. + ["custom/music"] | unique)' takes that
 #    result, adds "custom/music" to the "modules-center" array,
 #    and filters for uniqueness to prevent duplicates.
-if ! jq --argjson new_module "$NEW_MODULE_JSON" \
-       '(. * $new_module) | .["modules-center"] |= (. + ["custom/music"] | unique)' \
-       "$CONFIG_FILE" > "$TMP_FILE"; then
+if ! echo "$SANITIZED_JSON" | jq --argjson new_module "$NEW_MODULE_JSON" \
+       '(. * $new_module) | .["modules-center"] |= (. + ["custom/music"] | unique)' > "$TMP_FILE"; then
     
     # --- Error Handling ---
     echo "---------------------------------------------------------------" >&2
     echo "Error: 'jq' failed to parse $CONFIG_FILE." >&2
-    echo "This is likely because your file has comments (JSONC)." >&2
-    echo "'jq' only works with strict JSON." >&2
+    echo "This is likely because your file has comments (JSONC) or" >&2
+    echo "another feature that this script could not automatically clean." >&2
     echo >&2
     echo "Please manually remove all comments (lines starting with //" >&2
-    echo "and /* ... */ blocks) from $CONFIG_FILE and try again." >&2
+    echo "and /* ... */ blocks) and trailing commas, then try again." >&2
     echo "Your original file has been restored from backup." >&2
     echo "---------------------------------------------------------------" >&2
     

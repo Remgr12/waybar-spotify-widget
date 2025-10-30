@@ -35,15 +35,15 @@ fi
 # --- Define the new module by building it with jq ---
 # This safely inserts the absolute path into the JSON object
 NEW_MODULE_JSON=$(jq -n --arg exec_path "$WIDGET_SCRIPT_PATH" '{
-  "custom/spotify": {
+  "custom/music": {
     "format": "{}",
     "exec": $exec_path,
     "return-type": "json",
     "interval": 1,
-    "exec-if": "pgrep spotify",
-    "on-click": "playerctl -p spotify_player play-pause",
-    "on-scroll-up": "playerctl -p spotify_player next",
-    "on-scroll-down": "playerctl -p spotify_player previous",
+    "exec-if": "pgrep spotify || pgrep strawberry",
+    "on-click": "$exec_path play-pause",
+    "on-scroll-up": "$exec_path next",
+    "on-scroll-down": "$exec_path previous",
     "tooltip": true
   }
 }')
@@ -56,15 +56,15 @@ cp "$CONFIG_FILE" "$BACKUP_FILE"
 TMP_FILE=$(mktemp)
 
 # --- Merge the JSON object AND add to modules-center ---
-echo "Adding 'custom/spotify' definition (Exec: $WIDGET_SCRIPT_PATH)..."
+echo "Adding 'custom/music' definition (Exec: $WIDGET_SCRIPT_PATH)..."
 
 # This command chains two operations:
 # 1. '(. * $new_module)' merges the new module definition into the root.
-# 2. '| .["modules-center"] |= (. + ["custom/spotify"] | unique)' takes that
-#    result, adds "custom/spotify" to the "modules-center" array,
+# 2. '| .["modules-center"] |= (. + ["custom/music"] | unique)' takes that
+#    result, adds "custom/music" to the "modules-center" array,
 #    and filters for uniqueness to prevent duplicates.
 if ! jq --argjson new_module "$NEW_MODULE_JSON" \
-       '(. * $new_module) | .["modules-center"] |= (. + ["custom/spotify"] | unique)' \
+       '(. * $new_module) | .["modules-center"] |= (. + ["custom/music"] | unique)' \
        "$CONFIG_FILE" > "$TMP_FILE"; then
     
     # --- Error Handling ---
@@ -88,5 +88,5 @@ fi
 mv "$TMP_FILE" "$CONFIG_FILE"
 
 echo "Success! $CONFIG_FILE has been updated."
-echo "Added 'custom/spotify' module definition."
-echo "Added 'custom/spotify' to 'modules-center' array."
+echo "Added 'custom/music' module definition."
+echo "Added 'custom/music' to 'modules-center' array."

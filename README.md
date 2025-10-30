@@ -1,29 +1,30 @@
 # waybar-music-widget
 
-This is a widget for Waybar that displays your currently playing song title and artist from either Spotify or Strawberry, automatically detecting which one is active.
+This is a widget for Waybar that displays your currently playing song title and artist from either Spotify or Strawberry, automatically detecting the most relevant player to show.
 
 ## Features
--   **Multi-Player Support:** Automatically detects and displays music from Spotify and Strawberry Music Player.
+-   **Intelligent Player Detection:** Automatically detects and displays the music player that is actively "Playing", prioritizing it over any that are "Paused".
+-   **Multi-Player Support:** Works with both Spotify and Strawberry Music Player.
 -   **Dynamic Player Controls:** Use `on-click` and `on-scroll` events in Waybar to control playback (play/pause, next, previous) on whichever player is currently active.
--   **Easy Installation:** Comes with an `Install.sh` script to automatically configure Waybar for you.
 -   **Customizable:** Shows different icons for each player ( for Spotify, 🍓 for Strawberry).
 
 ## Supported Players
--   **Spotify:** `spotify`
--   **Strawberry:** `org.strawberrymusicplayer.strawberry`
+-   **Spotify:** `spotify_player`
+-   **Strawberry:** `strawberry`
 
 ## Installation
-1.  **Dependencies:** Make sure you have `jq` and `playerctl` installed.
-    -   On Arch: `sudo pacman -S jq playerctl`
-    -   On Debian/Ubuntu: `sudo apt install jq playerctl`
-2.  **Run the Installer:** Navigate to the repository directory and run the install script:
-    ```bash
-    ./Install.sh
-    ```
-    This will back up your existing Waybar config, then add the necessary module definition and add it to your `modules-center` array.
 
-## Manual Configuration
-If you prefer to set it up manually, add `"custom/music"` to your `modules-center` array in `~/.config/waybar/config.jsonc`, and then add the following module definition.
+### 1. Dependencies
+First, make sure you have `jq` and `playerctl` installed.
+-   **On Arch Linux:** `sudo pacman -S jq playerctl`
+-   **On Debian/Ubuntu:** `sudo apt install jq playerctl`
+
+### 2. Manual Configuration (Recommended)
+This is the most reliable way to install the widget.
+
+First, add `"custom/music"` to your `modules-center` (or left/right) array in `~/.config/waybar/config.jsonc`.
+
+Then, add the following module definition to your config file.
 
 **Note:** The `exec-if` condition is important. It ensures the script only runs when a supported player is active, saving resources.
 
@@ -40,4 +41,13 @@ If you prefer to set it up manually, add `"custom/music"` to your `modules-cente
     "tooltip": true
 },
 ```
-*Remember to replace `/path/to/your/script/` with the actual absolute path to the `waybar-spotify-widget.sh` script.*
+***Important:*** *Remember to replace `/path/to/your/script/` with the actual absolute path to the `waybar-spotify-widget.sh` script.*
+
+### 3. Installation Script (Alternative)
+An installer script is included for convenience, but it can be a bit finicky. It attempts to modify your Waybar configuration file automatically, which may not work reliably with all setups. **The manual method is strongly recommended.**
+
+If you'd like to try it, navigate to the repository directory and run the script:
+```bash
+./Install.sh
+```
+This will back up your existing Waybar config, then attempt to add the necessary module definition and add it to your `modules-center` array.

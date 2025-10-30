@@ -4,6 +4,7 @@ This is a widget for Waybar that displays your currently playing song title and 
 
 ## Features
 -   **Intelligent Player Detection:** Automatically detects and displays the music player that is actively "Playing", prioritizing it over any that are "Paused".
+-   **Sticky Player Cooldown:** To prevent the display from flickering when you briefly pause, the Strawberry player will remain "stuck" on the display for 5 minutes after being paused. Active playback from any other player will immediately override this.
 -   **Multi-Player Support:** Works with both Spotify and Strawberry Music Player.
 -   **Dynamic Player Controls:** Use `on-click` and `on-scroll` events in Waybar to control playback (play/pause, next, previous) on whichever player is currently active.
 -   **Customizable:** Shows different icons for each player ( for Spotify, 🍓 for Strawberry).

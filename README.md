@@ -6,7 +6,7 @@ This is a widget for Waybar that displays your currently playing song title and 
 -   **Multi-Player Support:** Automatically detects and displays music from Spotify and Strawberry Music Player.
 -   **Dynamic Player Controls:** Use `on-click` and `on-scroll` events in Waybar to control playback (play/pause, next, previous) on whichever player is currently active.
 -   **Easy Installation:** Comes with an `Install.sh` script to automatically configure Waybar for you.
--   **Customizable:** Shows different icons for each player ( for Spotify, 🍓 for Strawberry).
+-   **Customizable:** Shows different icons for each player (  for Spotify, 🍓 for Strawberry).
 
 ## Supported Players
 -   **Spotify:** `spotify`

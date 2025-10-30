@@ -2,13 +2,12 @@
 # Script: Music waybar widget
 
 # --- Configuration ---
-STICKY_PLAYER="strawberry"
-STICKY_DURATION=300 # 5 minutes in seconds
-STICKY_FILE="/tmp/waybar_sticky_player_pause_time"
+# Temp file to store the name of the last actively playing player
+LAST_ACTIVE_FILE="/tmp/waybar_last_active_player"
 
 # --- Find the most relevant active player ---
 # Priority: 1. Any player that is "Playing"
-# Priority: 2. A "sticky" player that was recently paused
+# Priority: 2. The *last active* player, if it is still "Paused"
 # Priority: 3. Any other player that is "Paused"
 find_relevant_player() {
     PLAYERS="spotify_player strawberry"
@@ -17,45 +16,32 @@ find_relevant_player() {
     for player in $PLAYERS; do
         status=$(playerctl -p "$player" status 2> /dev/null)
         if [ "$status" = "Playing" ]; then
-            # Active playback always wins. If something is playing, clear any sticky state.
-            rm -f "$STICKY_FILE"
+            # Active playback always wins. Record this player as the last one to be active.
+            echo "$player" > "$LAST_ACTIVE_FILE"
             echo "$player"
             return 0
         fi
     done
 
-    # --- At this point, no player is "Playing". Now we check statuses to manage stickiness. ---
+    # --- At this point, no player is "Playing". Now we check for our sticky player. ---
 
-    # Get the status of our designated sticky player
-    sticky_player_status=$(playerctl -p "$STICKY_PLAYER" status 2> /dev/null)
+    # --- Priority 2: Check if the last active player is still paused ---
+    if [ -f "$LAST_ACTIVE_FILE" ]; then
+        last_active_player=$(cat "$LAST_ACTIVE_FILE")
+        last_active_status=$(playerctl -p "$last_active_player" status 2> /dev/null)
 
-    if [ "$sticky_player_status" = "Paused" ]; then
-        # If the sticky player is paused, write the current time to the sticky file to start/refresh the cooldown.
-        date +%s > "$STICKY_FILE"
-    else
-        # If the sticky player is not paused (e.g., it was stopped), remove the sticky file.
-        rm -f "$STICKY_FILE"
-    fi
-
-    # --- Priority 2: Check if the sticky player is within its cooldown period ---
-    if [ -f "$STICKY_FILE" ]; then
-        pause_time=$(cat "$STICKY_FILE")
-        current_time=$(date +%s)
-        time_diff=$((current_time - pause_time))
-
-        if [ "$time_diff" -lt "$STICKY_DURATION" ]; then
-            # Cooldown is active. If the sticky player is still paused, it's our most relevant player.
-            if [ "$sticky_player_status" = "Paused" ]; then
-                echo "$STICKY_PLAYER"
-                return 0
-            fi
+        if [ "$last_active_status" = "Paused" ]; then
+            # The last active player is paused. It remains our most relevant player.
+            echo "$last_active_player"
+            return 0
         else
-            # Cooldown has expired, so remove the file.
-            rm -f "$STICKY_FILE"
+            # The last active player is no longer paused (it was likely stopped/closed).
+            # We can remove the state file, as it's no longer relevant.
+            rm -f "$LAST_ACTIVE_FILE"
         fi
     fi
 
-    # --- Priority 3: No one is playing and sticky is not active. Find the first paused player. ---
+    # --- Priority 3: No one is playing and sticky is not active. Find the first available paused player. ---
     for player in $PLAYERS; do
         status=$(playerctl -p "$player" status 2> /dev/null)
         if [ "$status" = "Paused" ]; then
@@ -74,6 +60,12 @@ RELEVANT_PLAYER=$(find_relevant_player)
 if [ -n "$1" ]; then
     if [ -n "$RELEVANT_PLAYER" ]; then
         playerctl -p "$RELEVANT_PLAYER" "$1"
+    else
+        # If no player is active, try to play the last active one as a fallback
+        if [ -f "$LAST_ACTIVE_FILE" ]; then
+            last_active_player=$(cat "$LAST_ACTIVE_FILE")
+            playerctl -p "$last_active_player" "$1"
+        fi
     fi
     exit 0 # Exit after handling the control command
 fi

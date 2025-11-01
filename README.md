@@ -71,7 +71,7 @@ find_relevant_player() {
     PLAYERS="spotify_player strawberry spotify"
 ```
 
-You could also add a custom unicode for the music player (one differing from the default 🎵 one)
+You could also add a custom unicode for the music player (one differing from the default 🎵 one).
 
 ```bash
 if [[ "$RELEVANT_PLAYER" == *"spotify"* ]]; then

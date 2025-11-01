@@ -10,7 +10,7 @@ LAST_ACTIVE_FILE="/tmp/waybar_last_active_player"
 # Priority: 2. The *last active* player, if it is still "Paused"
 # Priority: 3. Any other player that is "Paused"
 find_relevant_player() {
-    PLAYERS="spotify_player strawberry"
+    PLAYERS="spotify_player strawberry spotify"
 
     # --- Priority 1: Check for any player that is "Playing" ---
     for player in $PLAYERS; do

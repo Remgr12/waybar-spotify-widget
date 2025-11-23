@@ -81,7 +81,7 @@ player_status=$(playerctl -p "$RELEVANT_PLAYER" status 2> /dev/null)
 if [ "$player_status" = "Playing" ] || [ "$player_status" = "Paused" ]; then
     # Get metadata and escape special characters
     artist=$(playerctl -p "$RELEVANT_PLAYER" metadata artist | sed -e 's/"/\\"/g' -e 's/&/&amp;/g')
-    title=$(playerctl -p "$RELEVANT_PLAYER" metadata title | sed -e 's/"/\\"/g' -e 's/&/&amp;/g')
+    title=$(playerctl -p "$RELEVANT_PLAYER" metadata title | sed -e 's/"/\\"/g' -e 's/&/&amp;/g'|cut -c 1-15)
 
     if [[ "$RELEVANT_PLAYER" == *"spotify"* ]]; then
         icon="" # Spotify icon
